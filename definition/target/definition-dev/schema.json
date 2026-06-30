@@ -1,0 +1,102 @@
+{
+  "title": "salesforce-userinfo-claims-enrichment DEV",
+  "type": "object",
+  "$id": "salesforce-userinfo-claims-enrichment-dev",
+  "$schema": "https://json-schema.org/draft/2019-09/schema",
+  "properties": {
+    "userinfoService": {
+      "type": "string",
+      "title": "Salesforce UserInfo Service",
+      "description": "Flex Gateway service pointing to the Salesforce UserInfo host (e.g. login.salesforce.com). The path is configured separately via userinfoPath."
+    },
+    "userinfoPath": {
+      "type": "string",
+      "default": "/services/oauth2/userinfo",
+      "title": "UserInfo Path",
+      "description": "Path of the Salesforce UserInfo endpoint. Change only if your org uses a custom domain or different path."
+    },
+    "propertiesKey": {
+      "type": "string",
+      "default": "custom_attributes",
+      "title": "Properties Key",
+      "description": "Nested key written under principal.properties that holds the entire custom_attributes pair-set relayed from UserInfo. ABAC reads principal.properties.<propertiesKey>.<attributeName>. Mirrors how JWT Validation nests claims under principal.properties.claims."
+    },
+    "attributeAllowList": {
+      "type": "array",
+      "title": "Attribute Allow List",
+      "description": "When non-empty, only relay custom_attributes keys that appear in this list. Empty (default) relays all keys the Salesforce admin configured. Use to restrict which attributes downstream policies can read.",
+      "items": {
+        "type": "string"
+      }
+    },
+    "attributeName": {
+      "type": "string",
+      "title": "Flat Projection Attribute Name (Optional)",
+      "description": "Optional. When set, ALSO project this single custom_attributes key flat to principal.properties.<propertyName> for simple/legacy Cedar rules. Leave empty to use only the nested pair-set at principal.properties.<propertiesKey>."
+    },
+    "propertyName": {
+      "type": "string",
+      "title": "Flat Projection Property Name (Optional)",
+      "description": "Optional. The flat key name written to principal.properties.<propertyName> for the single-attribute projection. Defaults to attributeName when not set. Only used when attributeName is set."
+    },
+    "timeoutMs": {
+      "type": "integer",
+      "default": 5000,
+      "title": "UserInfo Request Timeout (ms)",
+      "description": "Maximum time in milliseconds to wait for the Salesforce UserInfo HTTP response before treating the call as a failure. Must be between 1000ms and 30000ms.",
+      "minimum": 1000,
+      "maximum": 30000
+    },
+    "cacheEnabled": {
+      "type": "boolean",
+      "default": true,
+      "title": "Enable Caching",
+      "description": "Cache UserInfo attribute results keyed on a hash of the access token. Reduces outbound calls to Salesforce. Effective TTL is min(cacheTtlMinutes, remaining token lifetime)."
+    },
+    "cacheTtlMinutes": {
+      "type": "integer",
+      "default": 5,
+      "title": "Cache TTL (minutes)",
+      "description": "How long (in minutes) to cache a resolved attribute pair-set. Set 0 for no time-based expiry (cache only bounded by token lifetime). Maximum 60 minutes. Only active when cacheEnabled is true.",
+      "minimum": 0,
+      "maximum": 60
+    },
+    "maxCacheEntries": {
+      "type": "integer",
+      "default": 1000,
+      "title": "Max Cache Entries",
+      "description": "Maximum number of entries held in the cache at any time. Bounds memory usage. Mirrors the Token Introspection policy default of 1000.",
+      "minimum": 1
+    },
+    "cacheBackend": {
+      "type": "string",
+      "default": "local",
+      "title": "Cache Backend",
+      "description": "Storage backend for the cache. local: in-process memory (single-replica only). remote: shared Redis/external cache (multi-replica safe). Default: local.",
+      "enum": [
+        "local",
+        "remote"
+      ]
+    },
+    "onEnrichmentError": {
+      "type": "string",
+      "default": "denyClosed",
+      "title": "On Enrichment Error",
+      "description": "Behaviour when the custom_attributes cannot be determined (UserInfo timeout, non-200, unparseable body). denyClosed (default): inject an empty pair-set and continue — Cedar rules checking for a specific value will deny. failRequest: short-circuit the request with HTTP 503. allowOpen: inject a permissive pair-set (discouraged; always fully logged and metered).",
+      "enum": [
+        "denyClosed",
+        "failRequest",
+        "allowOpen"
+      ]
+    },
+    "statusProperty": {
+      "type": "string",
+      "default": "mcp_enrichment_status",
+      "title": "Status Property Name",
+      "description": "A second key written to principal.properties.<statusProperty> carrying ok | error | unauthenticated. Allows ABAC rules to distinguish a successful enrichment from a failed one."
+    }
+  },
+  "required": [
+    "userinfoService"
+  ]
+}

@@ -1,0 +1,18 @@
+# Build artifacts
+/target/
+Cargo.lock
+
+# Generated files
+/src/generated/
+registration.yaml
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# Playground generated
+playground/config/custom-policies/
+
+# Distribution
+/dist/

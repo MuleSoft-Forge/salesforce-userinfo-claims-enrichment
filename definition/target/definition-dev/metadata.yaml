@@ -1,0 +1,7 @@
+#%Policy Definition 0.1
+name: salesforce-userinfo-claims-enrichment DEV
+category: Custom
+providedCharacteristics: []
+interfaceScope:
+  - api
+  - resource
