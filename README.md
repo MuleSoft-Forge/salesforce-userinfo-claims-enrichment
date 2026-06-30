@@ -86,7 +86,11 @@ A [MuleSoft Flex Gateway PDK](https://docs.mulesoft.com/pdk/latest/) custom poli
 Before applying this policy, a Salesforce admin must:
 
 1. **Enable OAuth** on the Connected App / External Client App
-2. **Add `openid` scope** to the app configuration
+2. **Configure OAuth Scopes** - Required scopes:
+   - `mcp_api` - Access to MCP endpoints
+   - `refresh_token` - Token refresh capability
+   - `custom_permissions` - Access to custom permission data
+   - ❌ `openid` is **NOT required** (this policy calls UserInfo directly, not OIDC Discovery)
 3. **Enable Custom Attributes**:
    - Go to app's ID Token settings
    - Enable "Configure ID Token" → "Include Custom Attributes"
