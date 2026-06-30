@@ -1,0 +1,6 @@
+{
+  "name": "Salesforce UserInfo Claims Enrichment",
+  "description": "Enriches Authentication principal with per-user attributes from Salesforce UserInfo endpoint. Enables per-user ABAC authorization, multi-tenant routing, and conditional policies based on Salesforce custom permissions and attributes.",
+  "tags": ["salesforce", "authentication", "userinfo", "abac", "mcp", "enrichment", "custom-attributes"],
+  "categories": ["Custom"]
+}
