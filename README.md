@@ -23,6 +23,45 @@ A [MuleSoft Flex Gateway PDK](https://docs.mulesoft.com/pdk/latest/) custom poli
 - Conditional policies (rate limits, logging verbosity by user tier)
 - Feature flags (enable/disable per Salesforce permission set)
 
+## Quick Start Configuration
+
+### Minimal Configuration (1 required field)
+
+```yaml
+- policyRef:
+    name: salesforce-userinfo-claims-enrichment-flex-v1-0
+  config:
+    userinfoService: login.salesforce.com
+```
+
+That's it! All other fields have sensible defaults.
+
+### With Attribute Filtering
+
+```yaml
+- policyRef:
+    name: salesforce-userinfo-claims-enrichment-flex-v1-0
+  config:
+    userinfoService: login.salesforce.com
+    attributeAllowList:
+      - mcp_access_level
+      - org_id
+```
+
+**📖 See [CONFIG.md](CONFIG.md) for complete field documentation**
+
+### All Configuration Fields (9 total)
+
+1. **userinfoService** (required) - Salesforce hostname
+2. **userinfoPath** - API path (default: `/services/oauth2/userinfo`)
+3. **propertiesKey** - Where to store attrs (default: `custom_attributes`)
+4. **attributeAllowList** - Filter attributes (default: allow all)
+5. **timeoutMs** - Request timeout (default: 5000ms)
+6. **cacheEnabled** - Enable caching (default: true)
+7. **cacheTtlMinutes** - Cache duration (default: 5 minutes)
+8. **maxCacheEntries** - Cache size limit (default: 1000)
+9. **statusProperty** - Status flag name (default: `mcp_enrichment_status`)
+
 ## When and Why to Use
 
 ### What This Policy Actually Requires
