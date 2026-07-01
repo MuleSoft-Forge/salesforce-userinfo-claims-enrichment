@@ -28,7 +28,6 @@ const DEFAULT_TIMEOUT_MS: i64 = 5000;
 const DEFAULT_CACHE_ENABLED: bool = true;
 const DEFAULT_CACHE_TTL_MINUTES: i64 = 5;
 const DEFAULT_MAX_CACHE_ENTRIES: i64 = 1000;
-const DEFAULT_ON_ENRICHMENT_ERROR: &str = "denyClosed";
 const DEFAULT_STATUS_PROPERTY: &str = "mcp_enrichment_status";
 const DEFAULT_PROPERTIES_KEY: &str = "custom_attributes";
 
@@ -82,9 +81,6 @@ fn cache_unwrap(raw: &str) -> Option<JsonValue> {
 /// (default `custom_attributes`) — mirroring how JWT Validation nests the full claim
 /// set under `principal.properties.claims`.
 ///
-/// If `config.attribute_name` is set, a single key is ALSO projected flat to
-/// `principal.properties.<propertyName>` for simple/legacy Cedar rules.
-///
 /// `serde_json::Value` implements PDK's `IntoValue` trait, so passing it directly
 /// to `AuthenticationData::new` produces a proper `pdk::script::Value::Object(HashMap)`
 /// that downstream policies can deserialise as a map.
@@ -109,20 +105,7 @@ fn write_auth(authentication: &Authentication, config: &Config, attrs: &JsonValu
     // 1. Nested pair-set
     props_map.insert(properties_key.to_string(), attrs.clone());
 
-    // 2. Optional flat projection
-    if let Some(ref attr_name) = config.attribute_name {
-        let flat_name = config
-            .property_name
-            .as_deref()
-            .unwrap_or(attr_name.as_str());
-        let flat_value = attrs
-            .get(attr_name)
-            .cloned()
-            .unwrap_or(JsonValue::String(String::new()));
-        props_map.insert(flat_name.to_string(), flat_value);
-    }
-
-    // 3. Status
+    // 2. Status
     props_map.insert(
         status_property.to_string(),
         JsonValue::String(status.to_string()),
@@ -160,55 +143,14 @@ fn handle_failure(
     );
     policy_violations.generate_policy_violation();
 
-    let on_error = config
-        .on_enrichment_error
-        .as_deref()
-        .unwrap_or(DEFAULT_ON_ENRICHMENT_ERROR);
-
-    match on_error {
-        "failRequest" => {
-            let body = json!({
-                "jsonrpc": "2.0",
-                "error": {
-                    "code": -32603,
-                    "message": format!("MCP entitlement unavailable: {}", reason)
-                },
-                "id": null
-            });
-            logger::error!("[sf-userinfo-enrichment] failRequest: returning HTTP 503 to caller");
-            Flow::Break(
-                Response::new(503)
-                    .with_headers(vec![(
-                        "content-type".to_string(),
-                        "application/json".to_string(),
-                    )])
-                    .with_body(body.to_string().as_str()),
-            )
-        }
-        "allowOpen" => {
-            logger::warn!(
-                "[sf-userinfo-enrichment] allowOpen: injecting permissive pair-set despite failure [{}]",
-                reason
-            );
-            write_auth(
-                authentication,
-                config,
-                &json!({"mcp_access_level": "full"}),
-                STATUS_ERROR,
-            );
-            Flow::Continue(())
-        }
-        // "denyClosed" is the default — inject empty pair-set so Cedar write rules
-        // fail to find the required attribute and naturally deny.
-        _ => {
-            logger::warn!(
-                "[sf-userinfo-enrichment] denyClosed: injecting empty pair-set for reason={}",
-                reason
-            );
-            write_auth(authentication, config, &json!({}), STATUS_ERROR);
-            Flow::Continue(())
-        }
-    }
+    // Error handling is hardcoded to "denyClosed" mode (safe default):
+    // Inject empty pair-set so ABAC rules fail to find required attributes and naturally deny.
+    logger::warn!(
+        "[sf-userinfo-enrichment] denyClosed: injecting empty pair-set for reason={}",
+        reason
+    );
+    write_auth(authentication, config, &json!({}), STATUS_ERROR);
+    Flow::Continue(())
 }
 
 /// Per-request enrichment: extract bearer token, check cache, call UserInfo, relay pair-set.
@@ -543,36 +485,14 @@ async fn configure(
     }
 
     // Build cache storage backend based on configuration.
-    // local: in-process memory (single-replica only)
-    // remote: shared external cache (multi-replica safe, requires Redis/etc)
-    let cache_backend = config.cache_backend.as_deref().unwrap_or("local");
-
-    // Note: For simplicity in v1.0, we use local storage always and log the intent.
-    // Full remote support requires DataStorage trait object handling which adds complexity.
-    // Operators can switch to remote in future versions by updating this match.
-    if cache_backend == "remote" {
-        let ttl_ms = (ttl as u64) * 60_000;
-        logger::warn!(
-            "[sf-userinfo-enrichment] cache_backend=remote configured but not yet implemented in v1.0 — falling back to local. ttl_ms={} (planned for future version)",
-            ttl_ms
-        );
-    } else {
-        logger::info!(
-            "[sf-userinfo-enrichment] cache_backend=local — single-replica mode (default)"
-        );
-    }
-
+    // Cache backend is hardcoded to local (in-process memory, single-replica only)
     let storage = store_builder.local("sf-userinfo-claims");
 
     logger::info!(
-        "[sf-userinfo-enrichment] policy loaded ✓ — propertiesKey={} attributeName={:?} propertyName={:?} cacheEnabled={} ttlMin={} cacheBackend={} onEnrichmentError={}",
+        "[sf-userinfo-enrichment] policy loaded ✓ — propertiesKey={} cacheEnabled={} ttlMin={}",
         config.properties_key.as_deref().unwrap_or(DEFAULT_PROPERTIES_KEY),
-        config.attribute_name,
-        config.property_name,
         config.cache_enabled.unwrap_or(DEFAULT_CACHE_ENABLED),
-        ttl,
-        cache_backend,
-        config.on_enrichment_error.as_deref().unwrap_or(DEFAULT_ON_ENRICHMENT_ERROR)
+        ttl
     );
 
     let filter = on_request(
