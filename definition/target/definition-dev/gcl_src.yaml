@@ -4,9 +4,10 @@ apiVersion: gateway.mulesoft.com/v1alpha1
 kind: Extension
 metadata:
   labels:
-    title: salesforce-userinfo-claims-enrichment
+    title: Salesforce UserInfo Claims Enrichment
     category: Custom
     metadata/interfaceScope: api,resource
+    description: "Enriches Authentication principal with per-user attributes from Salesforce UserInfo endpoint for ABAC authorization"
 spec:
   extends:
     - name: extension-definition
@@ -15,8 +16,8 @@ spec:
     userinfoService:
       type: string
       format: service
-      title: "Salesforce UserInfo Service"
-      description: "Flex Gateway service pointing to the Salesforce UserInfo host (e.g. login.salesforce.com). The path is configured separately via userinfoPath."
+      title: "Salesforce UserInfo Service URL"
+      description: "⚠️ MUST include https:// protocol. Full URL to your Salesforce instance (e.g., https://login.salesforce.com or https://yourdomain.my.salesforce.com). The path is configured separately via userinfoPath."
     userinfoPath:
       type: string
       default: "/services/oauth2/userinfo"
@@ -33,14 +34,6 @@ spec:
         type: string
       title: "Attribute Allow List"
       description: "When non-empty, only relay custom_attributes keys that appear in this list. Empty (default) relays all keys the Salesforce admin configured. Use to restrict which attributes downstream policies can read."
-    attributeName:
-      type: string
-      title: "Flat Projection Attribute Name (Optional)"
-      description: "Optional. When set, ALSO project this single custom_attributes key flat to principal.properties.<propertyName> for simple/legacy Cedar rules. Leave empty to use only the nested pair-set at principal.properties.<propertiesKey>."
-    propertyName:
-      type: string
-      title: "Flat Projection Property Name (Optional)"
-      description: "Optional. The flat key name written to principal.properties.<propertyName> for the single-attribute projection. Defaults to attributeName when not set. Only used when attributeName is set."
     timeoutMs:
       type: integer
       default: 5000
@@ -66,23 +59,6 @@ spec:
       minimum: 1
       title: "Max Cache Entries"
       description: "Maximum number of entries held in the cache at any time. Bounds memory usage. Mirrors the Token Introspection policy default of 1000."
-    cacheBackend:
-      type: string
-      enum:
-        - local
-        - remote
-      default: local
-      title: "Cache Backend"
-      description: "Storage backend for the cache. local: in-process memory (single-replica only). remote: shared Redis/external cache (multi-replica safe). Default: local."
-    onEnrichmentError:
-      type: string
-      enum:
-        - denyClosed
-        - failRequest
-        - allowOpen
-      default: denyClosed
-      title: "On Enrichment Error"
-      description: "Behaviour when the custom_attributes cannot be determined (UserInfo timeout, non-200, unparseable body). denyClosed (default): inject an empty pair-set and continue — Cedar rules checking for a specific value will deny. failRequest: short-circuit the request with HTTP 503. allowOpen: inject a permissive pair-set (discouraged; always fully logged and metered)."
     statusProperty:
       type: string
       default: "mcp_enrichment_status"

@@ -16,8 +16,8 @@ spec:
     userinfoService:
       type: string
       format: service
-      title: "Salesforce UserInfo Service"
-      description: "Flex Gateway service pointing to the Salesforce UserInfo host (e.g. login.salesforce.com). The path is configured separately via userinfoPath."
+      title: "Salesforce UserInfo Service URL"
+      description: "⚠️ MUST include https:// protocol. Full URL to your Salesforce instance (e.g., https://login.salesforce.com or https://yourdomain.my.salesforce.com). The path is configured separately via userinfoPath."
     userinfoPath:
       type: string
       default: "/services/oauth2/userinfo"

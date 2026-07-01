@@ -3,11 +3,14 @@
 ## Required Fields
 
 ### userinfoService
-- **Type:** Service (hostname)
+- **Type:** Service URL
 - **Required:** Yes
-- **Description:** Salesforce hostname for UserInfo API calls
-- **Example:** `login.salesforce.com`
-- **Note:** This is a Flex Gateway service reference, not a full URL
+- **Description:** Full Salesforce URL for UserInfo API calls. ⚠️ **MUST include `https://` protocol**
+- **Examples:** 
+  - `https://login.salesforce.com` (standard production)
+  - `https://test.salesforce.com` (sandbox)
+  - `https://trailsignup-0275fda3e77265.my.salesforce.com` (custom domain)
+- **Note:** This is a Flex Gateway service URL, must be a complete URL with protocol
 
 ## Optional Fields
 
@@ -95,7 +98,7 @@
 - policyRef:
     name: salesforce-userinfo-claims-enrichment-flex-v1-0
   config:
-    userinfoService: login.salesforce.com
+    userinfoService: https://trailsignup-0275fda3e77265.my.salesforce.com
 ```
 
 ### With attribute filtering
@@ -103,7 +106,7 @@
 - policyRef:
     name: salesforce-userinfo-claims-enrichment-flex-v1-0
   config:
-    userinfoService: login.salesforce.com
+    userinfoService: https://login.salesforce.com
     attributeAllowList:
       - mcp_access_level
       - org_id
@@ -114,7 +117,7 @@
 - policyRef:
     name: salesforce-userinfo-claims-enrichment-flex-v1-0
   config:
-    userinfoService: login.salesforce.com
+    userinfoService: https://trailsignup-0275fda3e77265.my.salesforce.com
     propertiesKey: sf_attrs
     cacheEnabled: true
     cacheTtlMinutes: 10
@@ -126,6 +129,6 @@
 - policyRef:
     name: salesforce-userinfo-claims-enrichment-flex-v1-0
   config:
-    userinfoService: login.salesforce.com
+    userinfoService: https://login.salesforce.com
     timeoutMs: 10000  # 10 seconds for slow org
 ```

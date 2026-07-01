@@ -1,7 +1,7 @@
 {
   "assetId": "salesforce-userinfo-claims-enrichment-dev",
   "groupId": "eca25329-9592-4ff1-9054-1b08d103b991",
-  "version": "1.0.0-20260630140638",
-  "name": "salesforce-userinfo-claims-enrichment DEV",
+  "version": "1.0.5-20260701143732",
+  "name": "Salesforce UserInfo Claims Enrichment DEV",
   "main": "gcl.yaml"
 }

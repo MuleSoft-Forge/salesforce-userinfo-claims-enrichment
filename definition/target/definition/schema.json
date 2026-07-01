@@ -1,13 +1,13 @@
 {
-  "title": "salesforce-userinfo-claims-enrichment",
+  "title": "Salesforce UserInfo Claims Enrichment",
   "type": "object",
   "$id": "salesforce-userinfo-claims-enrichment",
   "$schema": "https://json-schema.org/draft/2019-09/schema",
   "properties": {
     "userinfoService": {
       "type": "string",
-      "title": "Salesforce UserInfo Service",
-      "description": "Flex Gateway service pointing to the Salesforce UserInfo host (e.g. login.salesforce.com). The path is configured separately via userinfoPath."
+      "title": "Salesforce UserInfo Service URL",
+      "description": "⚠️ MUST include https:// protocol. Full URL to your Salesforce instance (e.g., https://login.salesforce.com or https://yourdomain.my.salesforce.com). The path is configured separately via userinfoPath."
     },
     "userinfoPath": {
       "type": "string",
@@ -28,16 +28,6 @@
       "items": {
         "type": "string"
       }
-    },
-    "attributeName": {
-      "type": "string",
-      "title": "Flat Projection Attribute Name (Optional)",
-      "description": "Optional. When set, ALSO project this single custom_attributes key flat to principal.properties.<propertyName> for simple/legacy Cedar rules. Leave empty to use only the nested pair-set at principal.properties.<propertiesKey>."
-    },
-    "propertyName": {
-      "type": "string",
-      "title": "Flat Projection Property Name (Optional)",
-      "description": "Optional. The flat key name written to principal.properties.<propertyName> for the single-attribute projection. Defaults to attributeName when not set. Only used when attributeName is set."
     },
     "timeoutMs": {
       "type": "integer",
@@ -67,27 +57,6 @@
       "title": "Max Cache Entries",
       "description": "Maximum number of entries held in the cache at any time. Bounds memory usage. Mirrors the Token Introspection policy default of 1000.",
       "minimum": 1
-    },
-    "cacheBackend": {
-      "type": "string",
-      "default": "local",
-      "title": "Cache Backend",
-      "description": "Storage backend for the cache. local: in-process memory (single-replica only). remote: shared Redis/external cache (multi-replica safe). Default: local.",
-      "enum": [
-        "local",
-        "remote"
-      ]
-    },
-    "onEnrichmentError": {
-      "type": "string",
-      "default": "denyClosed",
-      "title": "On Enrichment Error",
-      "description": "Behaviour when the custom_attributes cannot be determined (UserInfo timeout, non-200, unparseable body). denyClosed (default): inject an empty pair-set and continue — Cedar rules checking for a specific value will deny. failRequest: short-circuit the request with HTTP 503. allowOpen: inject a permissive pair-set (discouraged; always fully logged and metered).",
-      "enum": [
-        "denyClosed",
-        "failRequest",
-        "allowOpen"
-      ]
     },
     "statusProperty": {
       "type": "string",

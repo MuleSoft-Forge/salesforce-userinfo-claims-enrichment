@@ -31,8 +31,10 @@ A [MuleSoft Flex Gateway PDK](https://docs.mulesoft.com/pdk/latest/) custom poli
 - policyRef:
     name: salesforce-userinfo-claims-enrichment-flex-v1-0
   config:
-    userinfoService: login.salesforce.com
+    userinfoService: https://login.salesforce.com
 ```
+
+⚠️ **Important**: `userinfoService` MUST include the `https://` protocol.
 
 That's it! All other fields have sensible defaults.
 
@@ -42,7 +44,7 @@ That's it! All other fields have sensible defaults.
 - policyRef:
     name: salesforce-userinfo-claims-enrichment-flex-v1-0
   config:
-    userinfoService: login.salesforce.com
+    userinfoService: https://login.salesforce.com
     attributeAllowList:
       - mcp_access_level
       - org_id
@@ -144,7 +146,7 @@ The attribute name and values are entirely up to the admin. The policy is generi
 
 | Property | Type | Required | Default | Description |
 |---|---|---|---|---|
-| `userinfoService` | Service | ✅ | — | Flex Gateway service pointing to Salesforce UserInfo host (e.g., `login.salesforce.com`) |
+| `userinfoService` | Service | ✅ | — | Full Salesforce URL including protocol (e.g., `https://login.salesforce.com` or `https://yourdomain.my.salesforce.com`). ⚠️ **MUST include `https://`** |
 | `userinfoPath` | String | | `/services/oauth2/userinfo` | Path of the UserInfo endpoint |
 | `propertiesKey` | String | | `custom_attributes` | Nested key written under `principal.properties` holding the full pair-set |
 | `attributeAllowList` | Array<String> | | `[]` | When non-empty, only relay these custom_attributes keys |
