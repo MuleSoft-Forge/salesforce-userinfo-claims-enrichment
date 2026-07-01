@@ -4,9 +4,10 @@ apiVersion: gateway.mulesoft.com/v1alpha1
 kind: Extension
 metadata:
   labels:
-    title: salesforce-userinfo-claims-enrichment
+    title: Salesforce UserInfo Claims Enrichment
     category: Custom
     metadata/interfaceScope: api,resource
+    description: "Enriches Authentication principal with per-user attributes from Salesforce UserInfo endpoint for ABAC authorization"
 spec:
   extends:
     - name: extension-definition
